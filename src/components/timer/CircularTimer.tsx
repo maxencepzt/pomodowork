@@ -10,10 +10,8 @@ import { View, StyleSheet, Text } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import Animated, {
     useAnimatedProps,
-    withTiming,
     useSharedValue,
-    cancelAnimation,
-    Easing,
+    useFrameCallback,
 } from 'react-native-reanimated';
 import { colors, typography, spacing } from '@/constants/theme';
 import type { TimerPhase } from '@/types/timer';
@@ -22,9 +20,9 @@ const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 interface CircularTimerProps {
     isRunning: boolean;
-    durationMs: number; // Total duration of current phase
-    remainingMs: number; // Current remaining time
-
+    remainingMs: number; // Used for static display when paused
+    durationMs: number;
+    endTime: number | null; // Added prop
     timeDisplay: string;
     phase: TimerPhase;
     size?: number;
@@ -35,6 +33,7 @@ export function CircularTimer({
     isRunning,
     remainingMs,
     durationMs,
+    endTime,
     timeDisplay,
     phase,
     size = 300,
@@ -57,24 +56,22 @@ export function CircularTimer({
 
     const percentRemaining = useSharedValue(durationMs > 0 ? remainingMs / durationMs : 1);
 
-    useEffect(() => {
-        if (durationMs <= 0) {
-            percentRemaining.value = 1;
+    // Frame callback for smooth animation independent of React renders
+    useFrameCallback(() => {
+        if (!isRunning || !endTime || durationMs <= 0) {
             return;
         }
 
-        if (isRunning) {
-            // Animate to 0 over the remaining time
-            // Linear easing for smooth timer
-            percentRemaining.value = withTiming(0, {
-                duration: remainingMs,
-                easing: Easing.linear,
-            });
-        } else {
-            // Pause animation at current point
-            cancelAnimation(percentRemaining);
-            // Sync with exact prop value to ensure accuracy
-            percentRemaining.value = remainingMs / durationMs;
+        const now = Date.now();
+        const remaining = Math.max(0, endTime - now);
+        const nextPercent = remaining / durationMs;
+        percentRemaining.value = nextPercent;
+    });
+
+    // Handle Pause state sync
+    useEffect(() => {
+        if (!isRunning && durationMs > 0) {
+            percentRemaining.value = Math.max(0, remainingMs / durationMs);
         }
     }, [isRunning, remainingMs, durationMs]);
 

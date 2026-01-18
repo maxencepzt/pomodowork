@@ -18,6 +18,7 @@ export default function HomeScreen() {
         phase,
         isRunning,
         remainingMs,
+        endTime,
         timeDisplay,
         completedCycles,
         totalCycles,
@@ -68,6 +69,7 @@ export default function HomeScreen() {
                         isRunning={isRunning}
                         remainingMs={remainingMs}
                         durationMs={activeProfile ? (phase === 'break' ? activeProfile.breakDurationMs : activeProfile.workDurationMs) : 0}
+                        endTime={endTime}
                         timeDisplay={displayTime}
                         phase={phase}
                     />

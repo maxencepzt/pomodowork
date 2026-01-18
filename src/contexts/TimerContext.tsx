@@ -60,6 +60,7 @@ function timerReducer(state: TimerState, action: TimerAction): TimerState {
                 ...state,
                 phase: action.nextPhase,
                 endTime: action.endTime,
+                isRunning: !!action.endTime,
                 completedCycles: action.nextPhase === 'break'
                     ? state.completedCycles + 1
                     : state.completedCycles,
@@ -139,38 +140,30 @@ export function TimerProvider({ children }: { children: ReactNode }) {
             const breakEndTime = phaseEndTime + breakDuration;
 
             // Check if we missed the break entirely (e.g. app closed for long time)
+            // Check if we missed the break entirely
             if (Date.now() > breakEndTime) {
-                // Break already finished in reality. Move to next cycle ready to start.
+                // Break already finished. Move to next work cycle (Paused/Ready to start)
                 dispatch({
                     type: 'PHASE_COMPLETE',
                     nextPhase: 'work',
-                    endTime: null // Ready to start, not running
+                    endTime: null
                 });
-                // Increment cycles for the break we "finished"
-                // Actually PHASE_COMPLETE increments on 'break' -> usually handled by reducer?
-                // Reducer increments when entering 'break'. If we skip to 'work', we need to increment.
-                // My reducer logic: "completedCycles: action.nextPhase === 'break' ? state.completedCycles + 1 ..."
-                // This logic is flawed if we skip break.
-                // I will simplify: Just start break with correct endTime. 
-                // If it's in the past, TICK will catch it immediately and finish it?
-                // Yes, if I set endTime in past, TICK will fire `remaining <= 0` and call `handlePhaseComplete` again (recursion).
-                // Recursion is risky.
-
-                // Let's stick to: Start Break. If in past, it will finish immediately.
+                return; // Stop here, do not dispatch break
             }
 
-            // Start Break (or "resume" it if we're late)
+            // Start Break
             dispatch({ type: 'PHASE_COMPLETE', nextPhase: 'break', endTime: breakEndTime });
 
             if (notifSettings.notifyBreakStart) {
+                // ... same logic
                 await haptics.triggerHaptic(notifSettings.mode);
                 if (notifSettings.mode === 'sound') {
                     await soundService.playSound();
                 }
             }
 
-            // Schedule notification for break end (if it's in future)
-            if (notifSettings.notifyWorkResume && breakEndTime > Date.now()) {
+            // Schedule notification for break end
+            if (notifSettings.notifyWorkResume) {
                 await notifications.schedulePhaseEndNotification('break', breakEndTime, notifSettings.mode);
             }
         } else {
