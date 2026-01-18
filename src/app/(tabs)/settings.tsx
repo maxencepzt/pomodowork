@@ -171,7 +171,8 @@ const styles = StyleSheet.create({
         backgroundColor: colors.background,
     },
     content: {
-        paddingVertical: spacing.lg,
+        paddingTop: spacing.lg,
+        paddingBottom: 100, // Space for absolute tab bar
     },
     section: {
         marginBottom: spacing.xl,

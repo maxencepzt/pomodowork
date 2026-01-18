@@ -2,6 +2,7 @@
  * Tab Layout
  * 
  * iOS-style bottom tab navigation with gradient + blur.
+ * Absolute positioning for true transparency effect.
  */
 
 import React from 'react';
@@ -21,16 +22,17 @@ function TabBarBackground() {
     }
     return (
         <View style={StyleSheet.absoluteFill}>
-            {/* Gradient fade at top */}
+            {/* Gradient fade at top - from transparent to dark */}
             <LinearGradient
-                colors={['transparent', 'rgba(13, 13, 13, 0.9)']}
-                style={styles.gradient}
+                colors={['rgba(13,13,13,0)', 'rgba(13,13,13,0.8)', 'rgba(13,13,13,1)']}
+                locations={[0, 0.2, 1]}
+                style={StyleSheet.absoluteFill}
             />
             {/* Blur effect */}
             <BlurView
-                intensity={60}
+                intensity={80}
                 tint="dark"
-                style={[StyleSheet.absoluteFill, { top: 16 }]}
+                style={[StyleSheet.absoluteFill, { backgroundColor: 'transparent' }]}
             />
         </View>
     );
@@ -103,9 +105,13 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
     tabBar: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
         backgroundColor: 'transparent',
         borderTopWidth: 0,
-        height: 88,
+        height: 85,
         elevation: 0,
     },
     tabBarItem: {
@@ -116,13 +122,6 @@ const styles = StyleSheet.create({
         fontSize: 10,
         fontWeight: '600',
         marginTop: 4,
-    },
-    gradient: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        height: 24,
     },
     header: {
         backgroundColor: colors.background,

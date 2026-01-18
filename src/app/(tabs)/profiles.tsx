@@ -125,6 +125,7 @@ const styles = StyleSheet.create({
     },
     listContent: {
         padding: spacing.md,
+        paddingBottom: 100, // Space for absolute tab bar
     },
     loading: {
         flex: 1,

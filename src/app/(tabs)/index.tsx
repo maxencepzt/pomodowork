@@ -93,6 +93,7 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingHorizontal: spacing.lg,
         paddingTop: spacing.xxxl,
+        paddingBottom: 100, // Space for absolute tab bar
     },
     profileInfo: {
         alignItems: 'center',
