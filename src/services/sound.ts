@@ -16,6 +16,13 @@ let soundObject: Audio.Sound | null = null;
 
 export async function playSound() {
     try {
+        // Configure audio to play even in silent mode (important for timers)
+        await Audio.setAudioModeAsync({
+            playsInSilentModeIOS: true,
+            staysActiveInBackground: true,
+            shouldDuckAndroid: true,
+        });
+
         // Load if not loaded
         if (!soundObject) {
             const { sound } = await Audio.Sound.createAsync(
