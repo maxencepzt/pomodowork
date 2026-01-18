@@ -16,7 +16,6 @@ const isWeb = Platform.OS === 'web';
 if (!isWeb) {
     Notifications.setNotificationHandler({
         handleNotification: async () => ({
-            shouldShowAlert: true,
             shouldPlaySound: true,
             shouldSetBadge: false,
             shouldShowBanner: true,
