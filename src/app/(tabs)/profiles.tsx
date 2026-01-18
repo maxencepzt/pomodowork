@@ -1,13 +1,14 @@
 /**
  * Profiles Screen
  * 
- * Consistent thick borders.
+ * List of profiles with swipe-to-delete.
  */
 
 import React from 'react';
 import { View, StyleSheet, FlatList, TouchableOpacity, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ProfileCard } from '@/components/profiles';
 import { useProfiles } from '@/contexts';
 import { colors, typography, spacing, radius, borders } from '@/constants/theme';
@@ -16,7 +17,7 @@ import type { Profile } from '@/types/profile';
 
 export default function ProfilesScreen() {
     const router = useRouter();
-    const { profiles, activeProfileId, setActiveProfile, isLoading } = useProfiles();
+    const { profiles, activeProfileId, setActiveProfile, deleteProfile, isLoading } = useProfiles();
 
     const handleCreatePress = async () => {
         await haptics.lightImpact();
@@ -28,11 +29,29 @@ export default function ProfilesScreen() {
         await setActiveProfile(profile.id);
     };
 
+    const handleDeleteProfile = async (profile: Profile) => {
+        // Don't allow deleting if only 1 profile left
+        if (profiles.length <= 1) return;
+
+        await haptics.mediumImpact();
+        await deleteProfile(profile.id);
+
+        // If we deleted the active profile, select the first one
+        if (profile.id === activeProfileId && profiles.length > 1) {
+            const remaining = profiles.filter(p => p.id !== profile.id);
+            if (remaining.length > 0) {
+                await setActiveProfile(remaining[0].id);
+            }
+        }
+    };
+
     const renderProfile = ({ item }: { item: Profile }) => (
         <ProfileCard
             profile={item}
             isActive={item.id === activeProfileId}
             onSelect={() => handleSelectProfile(item)}
+            onDelete={() => handleDeleteProfile(item)}
+            canDelete={profiles.length > 1}
         />
     );
 
@@ -47,7 +66,7 @@ export default function ProfilesScreen() {
     }
 
     return (
-        <View style={styles.container}>
+        <GestureHandlerRootView style={styles.container}>
             {/* Create button at top */}
             <TouchableOpacity
                 style={styles.createButton}
@@ -68,7 +87,7 @@ export default function ProfilesScreen() {
                 contentContainerStyle={styles.listContent}
                 showsVerticalScrollIndicator={false}
             />
-        </View>
+        </GestureHandlerRootView>
     );
 }
 
