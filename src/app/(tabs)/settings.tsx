@@ -69,11 +69,12 @@ export default function SettingsScreen() {
     const handleModeChange = async (mode: NotificationMode) => {
         await updateNotificationMode(mode);
 
-        // Preview the mode
+        // Always trigger notification preview
+        await notifications.testNotification(mode);
+
+        // For vibration mode, also trigger haptic feedback immediately
         if (mode === 'vibration') {
             await haptics.triggerHaptic(mode);
-        } else if (mode === 'sound') {
-            await notifications.testNotification(mode);
         }
     };
 

@@ -56,7 +56,7 @@ export async function schedulePhaseEndNotification(
     endTime: number,
     mode: NotificationMode
 ): Promise<string | null> {
-    if (isWeb || mode === 'none') {
+    if (isWeb) {
         return null;
     }
 
@@ -147,18 +147,19 @@ export const notifications = {
  * Schedule a test notification for previewing sound
  */
 export async function testNotification(mode: NotificationMode): Promise<void> {
-    if (isWeb || mode === 'none') return;
+    if (isWeb) return;
 
-    // For vibration, we just use haptics directly locally (no banner needed for preview)
-    // But for sound, we need the banner to trigger the system sound
+    // Trigger haptic for vibration/sound modes
+    // For Vibration mode, we primarily want to test the haptic feel
     if (mode === 'vibration') {
-        return;
+        // We rely on the caller (SettingsScreen) to trigger haptic via haptics.ts
+        // But we ALSO want to show a notification banner as requested
     }
 
     await Notifications.scheduleNotificationAsync({
         content: {
-            title: 'Sound Check',
-            body: 'This is your notification sound.',
+            title: 'Test Notification',
+            body: `Testing ${mode} mode behavior.`,
             sound: mode === 'sound' ? 'default' : false,
         },
         trigger: null, // Immediate
