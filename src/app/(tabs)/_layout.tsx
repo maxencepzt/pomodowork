@@ -85,21 +85,6 @@ export default function TabLayout() {
                 }}
             />
             <Tabs.Screen
-                name="settings"
-                options={{
-                    title: 'Settings',
-                    headerTitle: 'Settings',
-                    headerShown: true,
-                    tabBarIcon: ({ focused, color }) => (
-                        <Ionicons
-                            name={focused ? 'settings' : 'settings-outline'}
-                            size={26}
-                            color={color}
-                        />
-                    ),
-                }}
-            />
-            <Tabs.Screen
                 name="stats"
                 options={{
                     title: 'Stats',
@@ -108,6 +93,21 @@ export default function TabLayout() {
                     tabBarIcon: ({ focused, color }) => (
                         <Ionicons
                             name={focused ? 'stats-chart' : 'stats-chart-outline'}
+                            size={26}
+                            color={color}
+                        />
+                    ),
+                }}
+            />
+            <Tabs.Screen
+                name="settings"
+                options={{
+                    title: 'Settings',
+                    headerTitle: 'Settings',
+                    headerShown: true,
+                    tabBarIcon: ({ focused, color }) => (
+                        <Ionicons
+                            name={focused ? 'settings' : 'settings-outline'}
                             size={26}
                             color={color}
                         />

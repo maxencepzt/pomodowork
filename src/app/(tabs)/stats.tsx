@@ -1,10 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useStats } from '@/contexts/StatsContext';
-import { colors, typography, spacing, radius } from '@/constants/theme';
+import { colors, typography, spacing, radius, borders } from '@/constants/theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 
 export default function StatsScreen() {
     const { totalWorkMs, totalSessions } = useStats();
@@ -19,50 +18,54 @@ export default function StatsScreen() {
         : 0;
 
     return (
-        <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom + 80 }]}>
-            <View style={styles.header}>
-                <Text style={styles.title}>Productivity</Text>
-            </View>
+        <ScrollView
+            style={[styles.container]}
+            contentContainerStyle={{ paddingTop: insets.top + spacing.md, paddingBottom: insets.bottom + 80, paddingHorizontal: spacing.lg }}
+        >
+            <Text style={styles.pageTitle}>Statistics</Text>
 
             <View style={styles.grid}>
                 {/* Total Time Card - Large */}
-                <View style={[styles.card, styles.cardLarge]}>
-                    <LinearGradient
-                        colors={[colors.surface, '#F8F8F8']}
-                        style={StyleSheet.absoluteFill}
-                    />
-                    <View style={styles.iconContainer}>
-                        <Ionicons name="time" size={24} color={colors.accent} />
+                <View style={styles.cardLarge}>
+                    <View style={styles.headerRow}>
+                        <View style={[styles.settingIcon, { backgroundColor: 'rgba(255, 107, 107, 0.15)' }]}>
+                            <Ionicons name="time" size={24} color={colors.accent} />
+                        </View>
+                        <Text style={styles.cardLabel}>TIME FOCUSED</Text>
                     </View>
-                    <View>
+
+                    <View style={styles.valueContainer}>
                         <Text style={styles.valueLarge}>
                             {hours}<Text style={styles.unitLarge}>h</Text> {minutes}<Text style={styles.unitLarge}>m</Text>
                         </Text>
-                        <Text style={styles.label}>Total Focus Time</Text>
                     </View>
                 </View>
 
                 <View style={styles.row}>
                     {/* Sessions Card */}
                     <View style={styles.card}>
-                        <View style={[styles.iconContainer, { backgroundColor: '#E3F2FD' }]}>
-                            <Ionicons name="checkmark-circle" size={20} color="#2196F3" />
+                        <View style={[styles.settingIcon, { backgroundColor: 'rgba(34, 197, 94, 0.15)' }]}>
+                            <Ionicons name="file-tray-full-outline" size={22} color={colors.success} />
                         </View>
-                        <Text style={styles.value}>{totalSessions}</Text>
-                        <Text style={styles.label}>Sessions Completed</Text>
+                        <View style={styles.textContainer}>
+                            <Text style={styles.value} numberOfLines={1} adjustsFontSizeToFit>{totalSessions}</Text>
+                            <Text style={styles.labelSmall} numberOfLines={1}>SESSIONS</Text>
+                        </View>
                     </View>
 
                     {/* Average Time Card */}
                     <View style={styles.card}>
-                        <View style={[styles.iconContainer, { backgroundColor: '#E8F5E9' }]}>
-                            <Ionicons name="stats-chart" size={20} color="#4CAF50" />
+                        <View style={[styles.settingIcon, { backgroundColor: 'rgba(78, 205, 196, 0.15)' }]}>
+                            <Ionicons name="stats-chart" size={22} color={colors.accentBreak} />
                         </View>
-                        <Text style={styles.value}>{averageMinutes}<Text style={styles.unit}>m</Text></Text>
-                        <Text style={styles.label}>Avg Session Length</Text>
+                        <View style={styles.textContainer}>
+                            <Text style={styles.value} numberOfLines={1} adjustsFontSizeToFit>{averageMinutes}<Text style={styles.unit}>m</Text></Text>
+                            <Text style={styles.labelSmall} numberOfLines={1}>AVG LENGTH</Text>
+                        </View>
                     </View>
                 </View>
             </View>
-        </View>
+        </ScrollView>
     );
 }
 
@@ -70,17 +73,13 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: colors.background,
-        padding: spacing.lg,
     },
-    header: {
-        marginBottom: spacing.xl,
-        marginTop: spacing.md,
-    },
-    title: {
+    pageTitle: {
         ...typography.title,
         fontSize: 34,
         color: colors.primary,
-        letterSpacing: -0.5,
+        marginBottom: spacing.xl,
+        marginTop: spacing.sm,
     },
     grid: {
         gap: spacing.md,
@@ -89,54 +88,69 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         gap: spacing.md,
     },
+    // Consistent with ProfileCard style
+    cardLarge: {
+        backgroundColor: colors.surface,
+        borderRadius: radius.lg,
+        padding: spacing.lg,
+        borderWidth: borders.thick,
+        borderColor: colors.border,
+        width: '100%',
+    },
     card: {
         backgroundColor: colors.surface,
-        borderRadius: radius.xl,
-        padding: spacing.lg,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.04,
-        shadowRadius: 12,
-        elevation: 3,
-        borderWidth: 1,
-        borderColor: 'rgba(0,0,0,0.02)',
+        borderRadius: radius.lg,
+        padding: spacing.md,
+        borderWidth: borders.thick,
+        borderColor: colors.border,
         flex: 1,
-        overflow: 'hidden',
+        // Row layout for alignment
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        gap: spacing.sm, // Reduced gap to give more space to text
     },
-    cardLarge: {
-        paddingVertical: spacing.xl,
+    headerRow: {
+        flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: spacing.sm,
+        marginBottom: spacing.md,
+        gap: spacing.sm,
     },
-    iconContainer: {
+    settingIcon: {
         width: 44,
         height: 44,
-        borderRadius: 22,
-        backgroundColor: '#FFF3E0',
+        borderRadius: 12, // More squared like settings
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: spacing.md,
     },
-    label: {
-        ...typography.caption,
+    cardLabel: {
+        ...typography.headline,
+        fontSize: 14,
         color: colors.secondary,
-        fontWeight: '600',
-        marginTop: spacing.xs,
-        letterSpacing: 0.2,
-    },
-    value: {
-        fontSize: 32,
+        letterSpacing: 1,
         fontWeight: '700',
-        color: colors.primary,
-        fontFamily: 'System',
+    },
+    labelSmall: {
+        ...typography.caption,
+        color: colors.tertiary,
+        fontWeight: '700',
+        letterSpacing: 1,
+        marginTop: spacing.xs,
+    },
+    valueContainer: {
+        alignItems: 'center',
+        paddingVertical: spacing.md,
     },
     valueLarge: {
+        ...typography.display,
         fontSize: 56,
-        fontWeight: '800',
         color: colors.primary,
-        letterSpacing: -1,
-        textAlign: 'center',
+        fontWeight: '700',
+    },
+    value: {
+        ...typography.title,
+        fontSize: 32,
+        color: colors.primary,
+        marginBottom: spacing.xs,
     },
     unit: {
         fontSize: 18,
@@ -145,7 +159,12 @@ const styles = StyleSheet.create({
     },
     unitLarge: {
         fontSize: 24,
-        color: colors.secondary,
-        fontWeight: '500',
+        color: colors.tertiary,
+        fontWeight: '400',
+    },
+    textContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        paddingTop: 4, // Push text block down slightly for optical alignment
     },
 });
