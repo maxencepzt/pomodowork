@@ -43,14 +43,7 @@ export function formatProfileSummary(profile: Profile): string {
     const breakMin = Math.round(profile.breakDurationMs / (60 * 1000));
     const sessionHours = profile.sessionDurationMs / (60 * 60 * 1000);
 
-    const cycles = calculateTotalCycles(profile);
-
-    let sessionStr = '';
-    if (sessionHours === Math.floor(sessionHours)) {
-        sessionStr = `${sessionHours}h`;
-    } else {
-        sessionStr = `${sessionHours}h`;
-    }
+    const sessionStr = `${sessionHours}h`;
 
     return `${workMin} / ${breakMin} – ${sessionStr}`;
 }

@@ -15,7 +15,7 @@ import Animated, {
     Easing,
 } from 'react-native-reanimated';
 import { useSettings } from '@/contexts';
-import { colors, typography, spacing, radius, borders } from '@/constants/theme';
+import { colors, spacing, radius, borders } from '@/constants/theme';
 import { haptics } from '@/services/haptics';
 import type { NotificationMode } from '@/types/settings';
 

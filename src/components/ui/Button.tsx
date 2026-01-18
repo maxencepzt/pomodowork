@@ -30,9 +30,9 @@ export function Button({
         styles.container,
         styles[`container_${variant}`],
         styles[`container_${size}`],
-        fullWidth && styles.fullWidth,
-        disabled && styles.disabled,
-    ];
+        fullWidth ? styles.fullWidth : undefined,
+        disabled ? styles.disabled : undefined,
+    ].filter(Boolean) as ViewStyle[];
 
     const textStyles: TextStyle[] = [
         styles.text,

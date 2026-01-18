@@ -16,7 +16,7 @@ import React, {
     type ReactNode
 } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
-import { TimerState, TimerAction, TimerPhase, INITIAL_TIMER_STATE } from '@/types/timer';
+import { TimerState, TimerAction, INITIAL_TIMER_STATE } from '@/types/timer';
 import { Profile, calculateCycleCount } from '@/types/profile';
 import { notifications } from '@/services/notifications';
 import { haptics } from '@/services/haptics';

@@ -2,7 +2,7 @@
  * Default values and constants
  */
 
-import { Profile, DEFAULT_PROFILES } from '@/types/profile';
+import { DEFAULT_PROFILES } from '@/types/profile';
 
 export const DEFAULTS = {
     /** Default profile ID on first launch */

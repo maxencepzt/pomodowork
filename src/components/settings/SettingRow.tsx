@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { View, Text, Switch, TouchableOpacity, StyleSheet } from 'react-native';
-import { colors, typography, spacing, radius } from '@/constants/theme';
+import { colors, typography, spacing } from '@/constants/theme';
 
 interface SettingRowProps {
     label: string;
