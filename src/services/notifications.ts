@@ -79,6 +79,8 @@ export async function schedulePhaseEndNotification(
             ? 'Great focus session. Take a well-deserved break.'
             : 'Break is over. Ready for another focused session?',
         sound: mode === 'sound' ? 'default' : false,
+        priority: Notifications.AndroidNotificationPriority.MAX,
+        interruptionLevel: 'timeSensitive', // iOS 15+ break through summary/silence
     };
 
     // Configure vibration based on mode
