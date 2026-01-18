@@ -16,13 +16,16 @@ export async function triggerHaptic(mode: NotificationMode): Promise<void> {
     }
 
     if (mode === 'vibration') {
-        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        // User requested "powerful" vibration implies strong feedback
+        // Error provides a distinct triple-pulse on iOS
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+
+        // Add a follow-up heavy impact for extra "power"
+        setTimeout(async () => {
+            await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+        }, 300);
     } else if (mode === 'repeatingVibration') {
-        // Trigger multiple haptics with delay for "alarm" effect
-        for (let i = 0; i < 3; i++) {
-            await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-            await new Promise(resolve => setTimeout(resolve, 200));
-        }
+        // Legacy/Unused
     }
 }
 
