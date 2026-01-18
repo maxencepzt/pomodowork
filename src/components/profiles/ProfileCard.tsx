@@ -18,7 +18,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, typography, spacing, radius, borders } from '@/constants/theme';
-import { formatProfileSummary, calculateTotalCycles } from '@/utils/calculations';
+import { formatProfileSummary } from '@/utils/calculations';
 import type { Profile } from '@/types/profile';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;

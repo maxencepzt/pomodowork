@@ -20,6 +20,7 @@ type StorageKey = keyof typeof STORAGE_KEYS;
 
 export interface StoredStats {
     totalWorkMs: number;
+    totalSessions: number;
 }
 
 /**

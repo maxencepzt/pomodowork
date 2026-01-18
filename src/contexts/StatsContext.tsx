@@ -16,15 +16,18 @@ import { storage } from '@/services/storage';
 
 interface StatsState {
     totalWorkMs: number;
+    totalSessions: number;
     isLoading: boolean;
 }
 
 type StatsAction =
-    | { type: 'LOAD'; totalWorkMs: number }
-    | { type: 'ADD_WORK_TIME'; durationMs: number };
+    | { type: 'LOAD'; totalWorkMs: number; totalSessions: number }
+    | { type: 'ADD_WORK_TIME'; durationMs: number }
+    | { type: 'INCREMENT_SESSION' };
 
 const initialState: StatsState = {
     totalWorkMs: 0,
+    totalSessions: 0,
     isLoading: true,
 };
 
@@ -33,12 +36,18 @@ function statsReducer(state: StatsState, action: StatsAction): StatsState {
         case 'LOAD':
             return {
                 totalWorkMs: action.totalWorkMs,
+                totalSessions: action.totalSessions,
                 isLoading: false,
             };
         case 'ADD_WORK_TIME':
             return {
                 ...state,
                 totalWorkMs: state.totalWorkMs + action.durationMs,
+            };
+        case 'INCREMENT_SESSION':
+            return {
+                ...state,
+                totalSessions: state.totalSessions + 1,
             };
         default:
             return state;
@@ -47,6 +56,7 @@ function statsReducer(state: StatsState, action: StatsAction): StatsState {
 
 interface StatsContextValue extends StatsState {
     addWorkTime: (durationMs: number) => Promise<void>;
+    incrementTotalSessions: () => Promise<void>;
 }
 
 const StatsContext = createContext<StatsContextValue | null>(null);
@@ -61,6 +71,7 @@ export function StatsProvider({ children }: { children: ReactNode }) {
             dispatch({
                 type: 'LOAD',
                 totalWorkMs: savedStats?.totalWorkMs ?? 0,
+                totalSessions: savedStats?.totalSessions ?? 0,
             });
         }
         load();
@@ -82,13 +93,28 @@ export function StatsProvider({ children }: { children: ReactNode }) {
         // Let's read from storage to be safe (source of truth for persistence)
         const currentStats = await storage.getStats();
         const newTotal = (currentStats?.totalWorkMs ?? 0) + durationMs;
-        await storage.setStats({ totalWorkMs: newTotal });
+        // Preserve other stats
+        await storage.setStats({
+            totalWorkMs: newTotal,
+            totalSessions: currentStats?.totalSessions ?? 0
+        });
 
+    }, []);
+
+    const incrementTotalSessions = useCallback(async () => {
+        dispatch({ type: 'INCREMENT_SESSION' });
+        const currentStats = await storage.getStats();
+        const newSessions = (currentStats?.totalSessions ?? 0) + 1;
+        await storage.setStats({
+            totalWorkMs: currentStats?.totalWorkMs ?? 0,
+            totalSessions: newSessions
+        });
     }, []);
 
     const value: StatsContextValue = {
         ...state,
         addWorkTime,
+        incrementTotalSessions,
     };
 
     return (

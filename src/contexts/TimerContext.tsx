@@ -92,7 +92,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     const [state, dispatch] = useReducer(timerReducer, INITIAL_TIMER_STATE);
     const { settings } = useSettings();
     const { incrementSessionCount } = useProfiles();
-    const { addWorkTime } = useStats();
+    const { addWorkTime, incrementTotalSessions } = useStats();
 
     // Store profile for phase transitions
     const profileRef = useRef<Profile | null>(null);
@@ -137,6 +137,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
             if (profile) {
                 await incrementSessionCount(profile.id);
                 await addWorkTime(profile.workDurationMs);
+                await incrementTotalSessions();
             }
 
             // Work phase complete
