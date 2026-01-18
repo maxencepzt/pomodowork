@@ -17,6 +17,7 @@ import Animated, {
 import { useSettings } from '@/contexts';
 import { colors, spacing, radius, borders } from '@/constants/theme';
 import { haptics } from '@/services/haptics';
+import { notifications } from '@/services/notifications';
 import type { NotificationMode } from '@/types/settings';
 
 const NOTIFICATION_MODES: { value: NotificationMode; label: string; icon: string; color: string }[] = [
@@ -66,8 +67,14 @@ export default function SettingsScreen() {
     } = useSettings();
 
     const handleModeChange = async (mode: NotificationMode) => {
-        await haptics.selectionFeedback();
         await updateNotificationMode(mode);
+
+        // Preview the mode
+        if (mode === 'vibration') {
+            await haptics.triggerHaptic(mode);
+        } else if (mode === 'sound') {
+            await notifications.testNotification(mode);
+        }
     };
 
     const handleToggle = async (toggle: () => Promise<void>) => {

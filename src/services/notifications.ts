@@ -141,4 +141,27 @@ export const notifications = {
     cancelNotification,
     addNotificationReceivedListener,
     addNotificationResponseListener,
+    testNotification,
 };
+
+/**
+ * Schedule a test notification for previewing sound
+ */
+export async function testNotification(mode: NotificationMode): Promise<void> {
+    if (isWeb || mode === 'none') return;
+
+    // For vibration, we just use haptics directly locally (no banner needed for preview)
+    // But for sound, we need the banner to trigger the system sound
+    if (mode === 'vibration') {
+        return;
+    }
+
+    await Notifications.scheduleNotificationAsync({
+        content: {
+            title: 'Sound Check',
+            body: 'This is your notification sound.',
+            sound: mode === 'sound' ? 'default' : undefined,
+        },
+        trigger: null, // Immediate
+    });
+}
