@@ -5,6 +5,7 @@
  */
 
 import * as Haptics from 'expo-haptics';
+import { Vibration } from 'react-native';
 import type { NotificationMode } from '@/types/settings';
 
 /**
@@ -16,14 +17,13 @@ export async function triggerHaptic(mode: NotificationMode): Promise<void> {
     }
 
     if (mode === 'vibration') {
-        // User requested "powerful" vibration implies strong feedback
-        // Error provides a distinct triple-pulse on iOS
-        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        // User requested "grosse vibration" (strong buzzer), not "clac-clac" (haptics)
+        // Vibration.vibrate() uses the standard motor which feels stronger/longer
+        // On iOS, this triggers a standard vibration (~400ms). We can loop it to make it feel "heavy".
+        // Pattern: Wait 0ms, Vibrate 1000ms, Wait 1000ms, Vibrate 1000ms (Android)
+        // iOS ignores duration, so we just call it.
 
-        // Add a follow-up heavy impact for extra "power"
-        setTimeout(async () => {
-            await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-        }, 300);
+        Vibration.vibrate([0, 800, 200, 800]);
     } else if (mode === 'repeatingVibration') {
         // Legacy/Unused
     }
