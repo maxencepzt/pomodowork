@@ -41,6 +41,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "root": "./src/app"
+      },
+      "eas": {
+        "projectId": "e33b0131-b94c-4d79-bed1-86d5578eee22"
+      }
+    },
+    "owner": "maxence-pzt"
   }
 }
