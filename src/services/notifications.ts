@@ -79,7 +79,7 @@ export async function schedulePhaseEndNotification(
         body: isBreakNotification
             ? 'Great focus session. Take a well-deserved break.'
             : 'Break is over. Ready for another focused session?',
-        sound: mode === 'sound' ? 'default' : undefined,
+        sound: mode === 'sound' ? 'default' : false,
     };
 
     // Configure vibration based on mode
@@ -160,7 +160,7 @@ export async function testNotification(mode: NotificationMode): Promise<void> {
         content: {
             title: 'Sound Check',
             body: 'This is your notification sound.',
-            sound: mode === 'sound' ? 'default' : undefined,
+            sound: mode === 'sound' ? 'default' : false,
         },
         trigger: null, // Immediate
     });
