@@ -115,8 +115,8 @@ export function ProfilesProvider({ children }: { children: ReactNode }) {
     }, [state.profiles]);
 
     const deleteProfile = useCallback(async (id: string) => {
-        // Don't allow deleting default profiles
-        if (id.startsWith('default_')) {
+        // Don't allow deleting if only 1 profile left
+        if (state.profiles.length <= 1) {
             return;
         }
         dispatch({ type: 'DELETE', id });

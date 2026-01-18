@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { StyleSheet, Text, View, Dimensions } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, TouchableOpacity } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
     useSharedValue,
@@ -38,7 +38,6 @@ export function ProfileCard({ profile, isActive, onSelect, onDelete, canDelete }
     const summary = formatProfileSummary(profile);
 
     const translateX = useSharedValue(0);
-    const isDeleting = useSharedValue(false);
 
     const handleDelete = () => {
         if (onDelete && canDelete) {
@@ -46,45 +45,39 @@ export function ProfileCard({ profile, isActive, onSelect, onDelete, canDelete }
         }
     };
 
+    const handleSelect = () => {
+        onSelect();
+    };
+
     const panGesture = Gesture.Pan()
         .activeOffsetX([-10, 10])
         .onUpdate((e) => {
-            if (!canDelete) return;
+            if (!canDelete) {
+                translateX.value = 0;
+                return;
+            }
             // Only allow left swipe
             translateX.value = Math.min(0, e.translationX);
         })
-        .onEnd((e) => {
+        .onEnd(() => {
             if (!canDelete) {
-                translateX.value = withSpring(0);
+                translateX.value = withSpring(0, { damping: 20 });
                 return;
             }
 
             if (translateX.value < DELETE_THRESHOLD) {
                 // Delete - animate out
-                isDeleting.value = true;
                 translateX.value = withTiming(-SCREEN_WIDTH, { duration: 200 }, () => {
                     runOnJS(handleDelete)();
                 });
             } else if (translateX.value < SNAP_POINT / 2) {
                 // Snap to show delete button
-                translateX.value = withSpring(SNAP_POINT);
+                translateX.value = withSpring(SNAP_POINT, { damping: 20 });
             } else {
                 // Snap back
-                translateX.value = withSpring(0);
+                translateX.value = withSpring(0, { damping: 20 });
             }
         });
-
-    const tapGesture = Gesture.Tap()
-        .onEnd(() => {
-            if (translateX.value < -10) {
-                // If swiped, tap snaps back
-                translateX.value = withSpring(0);
-            } else {
-                runOnJS(onSelect)();
-            }
-        });
-
-    const composedGesture = Gesture.Race(panGesture, tapGesture);
 
     const cardStyle = useAnimatedStyle(() => ({
         transform: [{ translateX: translateX.value }],
@@ -109,35 +102,56 @@ export function ProfileCard({ profile, isActive, onSelect, onDelete, canDelete }
         };
     });
 
+    // If cannot delete, render simple touchable
+    if (!canDelete) {
+        return (
+            <TouchableOpacity
+                style={[styles.container, isActive && styles.containerActive]}
+                onPress={onSelect}
+                activeOpacity={0.7}
+            >
+                <View style={styles.content}>
+                    <Text style={[styles.name, isActive && styles.nameActive]}>
+                        {profile.name}
+                    </Text>
+                    <Text style={styles.summary}>{summary}</Text>
+                </View>
+
+                <View style={styles.cyclesBadge}>
+                    <Text style={[styles.cyclesText, isActive && styles.cyclesTextActive]}>{cycles}</Text>
+                    <Text style={styles.cyclesLabel}>cycles</Text>
+                </View>
+            </TouchableOpacity>
+        );
+    }
+
     return (
         <View style={styles.wrapper}>
             {/* Delete button behind */}
-            {canDelete && (
-                <Animated.View style={[styles.deleteButton, deleteButtonStyle]}>
-                    <Ionicons name="trash-outline" size={24} color="#FFF" />
-                </Animated.View>
-            )}
+            <Animated.View style={[styles.deleteButton, deleteButtonStyle]}>
+                <Ionicons name="trash-outline" size={24} color="#FFF" />
+            </Animated.View>
 
             {/* Card */}
-            <GestureDetector gesture={composedGesture}>
-                <Animated.View
-                    style={[
-                        styles.container,
-                        isActive && styles.containerActive,
-                        cardStyle,
-                    ]}
-                >
-                    <View style={styles.content}>
-                        <Text style={[styles.name, isActive && styles.nameActive]}>
-                            {profile.name}
-                        </Text>
-                        <Text style={styles.summary}>{summary}</Text>
-                    </View>
+            <GestureDetector gesture={panGesture}>
+                <Animated.View style={[styles.container, isActive && styles.containerActive, cardStyle]}>
+                    <TouchableOpacity
+                        style={styles.cardContent}
+                        onPress={handleSelect}
+                        activeOpacity={0.8}
+                    >
+                        <View style={styles.content}>
+                            <Text style={[styles.name, isActive && styles.nameActive]}>
+                                {profile.name}
+                            </Text>
+                            <Text style={styles.summary}>{summary}</Text>
+                        </View>
 
-                    <View style={styles.cyclesBadge}>
-                        <Text style={[styles.cyclesText, isActive && styles.cyclesTextActive]}>{cycles}</Text>
-                        <Text style={styles.cyclesLabel}>cycles</Text>
-                    </View>
+                        <View style={styles.cyclesBadge}>
+                            <Text style={[styles.cyclesText, isActive && styles.cyclesTextActive]}>{cycles}</Text>
+                            <Text style={styles.cyclesLabel}>cycles</Text>
+                        </View>
+                    </TouchableOpacity>
                 </Animated.View>
             </GestureDetector>
         </View>
@@ -157,10 +171,16 @@ const styles = StyleSheet.create({
         padding: spacing.md,
         borderWidth: borders.thick,
         borderColor: colors.border,
+        marginBottom: spacing.sm,
     },
     containerActive: {
         borderColor: colors.accent,
         backgroundColor: colors.surfaceElevated,
+    },
+    cardContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
     },
     content: {
         flex: 1,
