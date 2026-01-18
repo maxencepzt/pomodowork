@@ -121,8 +121,11 @@ export function TimerProvider({ children }: { children: ReactNode }) {
 
         const { notifications: notifSettings } = settings;
 
+        // Use exact end time to maintain continuity, or current time if missing
+        const phaseEndTime = state.endTime || Date.now();
+
         if (state.phase === 'work') {
-            // Work phase complete, start break
+            // Work phase complete
             if (state.completedCycles + 1 >= state.totalCycles) {
                 // Session complete!
                 dispatch({ type: 'RESET' });
@@ -131,19 +134,57 @@ export function TimerProvider({ children }: { children: ReactNode }) {
                 return;
             }
 
-            const breakEndTime = Date.now() + profile.breakDurationMs;
+            const breakDuration = profile.breakDurationMs;
+            const breakEndTime = phaseEndTime + breakDuration;
+
+            // Check if we missed the break entirely (e.g. app closed for long time)
+            if (Date.now() > breakEndTime) {
+                // Break already finished in reality. Move to next cycle ready to start.
+                dispatch({
+                    type: 'PHASE_COMPLETE',
+                    nextPhase: 'work',
+                    endTime: null // Ready to start, not running
+                });
+                // Increment cycles for the break we "finished"
+                // Actually PHASE_COMPLETE increments on 'break' -> usually handled by reducer?
+                // Reducer increments when entering 'break'. If we skip to 'work', we need to increment.
+                // My reducer logic: "completedCycles: action.nextPhase === 'break' ? state.completedCycles + 1 ..."
+                // This logic is flawed if we skip break.
+                // I will simplify: Just start break with correct endTime. 
+                // If it's in the past, TICK will catch it immediately and finish it?
+                // Yes, if I set endTime in past, TICK will fire `remaining <= 0` and call `handlePhaseComplete` again (recursion).
+                // Recursion is risky.
+
+                // Let's stick to: Start Break. If in past, it will finish immediately.
+            }
+
+            // Start Break (or "resume" it if we're late)
             dispatch({ type: 'PHASE_COMPLETE', nextPhase: 'break', endTime: breakEndTime });
 
             if (notifSettings.notifyBreakStart) {
                 await haptics.triggerHaptic(notifSettings.mode);
             }
 
-            // Schedule notification for break end
-            if (notifSettings.notifyWorkResume) {
+            // Schedule notification for break end (if it's in future)
+            if (notifSettings.notifyWorkResume && breakEndTime > Date.now()) {
                 await notifications.schedulePhaseEndNotification('break', breakEndTime, notifSettings.mode);
             }
         } else {
             // Break phase complete, start work
+            // Usually we wait for user to start work? 
+            // If we want auto-start, we'd set endTime. 
+            // If not, we set endTime: null (Pause/Idle start)
+
+            // For now, let's auto-start work to keep momentum? 
+            // Or typically pomodoro pauses here. 
+            // "Break is over. Ready for another session?" implies pause.
+
+            // Current implementation was: `endTime = Date.now() + workDuration`. Auto-start.
+            // Let's keep auto-start but purely from NOW (user processes start of work).
+            // OR should it be from breakEndTime?
+            // If I take extra break, I don't want my work time eaten.
+            // So Start Work should be from Date.now() (fresh start).
+
             const workEndTime = Date.now() + profile.workDurationMs;
             dispatch({ type: 'PHASE_COMPLETE', nextPhase: 'work', endTime: workEndTime });
 
@@ -156,7 +197,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
                 await notifications.schedulePhaseEndNotification('work', workEndTime, notifSettings.mode);
             }
         }
-    }, [state.phase, state.completedCycles, state.totalCycles, settings]);
+    }, [state.phase, state.completedCycles, state.totalCycles, state.endTime, settings]);
 
     // Tick effect - update remaining time
     useEffect(() => {

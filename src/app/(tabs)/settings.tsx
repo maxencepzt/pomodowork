@@ -22,7 +22,6 @@ import type { NotificationMode } from '@/types/settings';
 const NOTIFICATION_MODES: { value: NotificationMode; label: string; icon: string; color: string }[] = [
     { value: 'sound', label: 'Sound', icon: 'volume-high-outline', color: '#A855F7' },
     { value: 'vibration', label: 'Vibration', icon: 'phone-portrait-outline', color: '#3B82F6' },
-    { value: 'repeatingVibration', label: 'Alarm', icon: 'alarm-outline', color: '#F59E0B' },
     { value: 'none', label: 'Silent', icon: 'volume-mute-outline', color: '#6B7280' },
 ];
 

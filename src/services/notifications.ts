@@ -79,7 +79,7 @@ export async function schedulePhaseEndNotification(
         body: isBreakNotification
             ? 'Great focus session. Take a well-deserved break.'
             : 'Break is over. Ready for another focused session?',
-        sound: mode === 'sound' ? true : false,
+        sound: mode === 'sound' ? 'default' : undefined,
     };
 
     // Configure vibration based on mode

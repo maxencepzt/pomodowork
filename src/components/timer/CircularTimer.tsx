@@ -2,16 +2,18 @@
  * CircularTimer Component
  * 
  * SVG-based circular progress with thick ring.
+ * Smoothly animates based on active/inactive state and remaining time.
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import Animated, {
     useAnimatedProps,
     withTiming,
-    Easing,
     useSharedValue,
+    cancelAnimation,
+    Easing,
 } from 'react-native-reanimated';
 import { colors, typography, spacing } from '@/constants/theme';
 import type { TimerPhase } from '@/types/timer';
@@ -19,7 +21,10 @@ import type { TimerPhase } from '@/types/timer';
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 interface CircularTimerProps {
-    progress: number;
+    isRunning: boolean;
+    durationMs: number; // Total duration of current phase
+    remainingMs: number; // Current remaining time
+
     timeDisplay: string;
     phase: TimerPhase;
     size?: number;
@@ -27,29 +32,62 @@ interface CircularTimerProps {
 }
 
 export function CircularTimer({
-    progress,
+    isRunning,
+    remainingMs,
+    durationMs,
     timeDisplay,
     phase,
     size = 300,
-    strokeWidth = 16,  // Much thicker stroke
+    strokeWidth = 16,
 }: CircularTimerProps) {
     const radius = (size - strokeWidth) / 2;
     const circumference = 2 * Math.PI * radius;
     const center = size / 2;
 
-    const animatedProgress = useSharedValue(0);
+    // We animate from 0 (empty) to 1 (full) or vice-versa?
+    // Let's say full circle = 0 progress (or 100% remaining).
+    // progress = 1 - (remaining / duration)
+    // We want to animate the strokeDashoffset.
+    // offset = circumference * (1 - progress)
+    // If progress 0, offset = circumference (empty) -> wait, depends on logic.
+    // Usually: offset 0 = full ring. offset circumference = empty ring.
 
-    React.useEffect(() => {
-        animatedProgress.value = withTiming(progress, {
-            duration: 300,
-            easing: Easing.out(Easing.ease),
-        });
-    }, [progress, animatedProgress]);
+    // Let's use a shared value representing "percent remaining" (1 to 0).
+    // 1 = full (start), 0 = empty (end).
+
+    const percentRemaining = useSharedValue(durationMs > 0 ? remainingMs / durationMs : 1);
+
+    useEffect(() => {
+        if (durationMs <= 0) {
+            percentRemaining.value = 1;
+            return;
+        }
+
+        if (isRunning) {
+            // Animate to 0 over the remaining time
+            // Linear easing for smooth timer
+            percentRemaining.value = withTiming(0, {
+                duration: remainingMs,
+                easing: Easing.linear,
+            });
+        } else {
+            // Pause animation at current point
+            cancelAnimation(percentRemaining);
+            // Sync with exact prop value to ensure accuracy
+            percentRemaining.value = remainingMs / durationMs;
+        }
+    }, [isRunning, remainingMs, durationMs]);
 
     const animatedProps = useAnimatedProps(() => {
-        const strokeDashoffset = circumference * (1 - animatedProgress.value);
+        // strokeDashoffset:
+        // 0 = full
+        // circumference = empty
+        // We want full at start (percent 1) -> offset 0
+        // Empty at end (percent 0) -> offset circumference
+        const offset = circumference * (1 - percentRemaining.value);
+
         return {
-            strokeDashoffset,
+            strokeDashoffset: offset,
         };
     });
 
@@ -115,6 +153,7 @@ const styles = StyleSheet.create({
         fontWeight: typography.display.fontWeight,
         letterSpacing: typography.display.letterSpacing,
         color: colors.primary,
+        fontVariant: ['tabular-nums'], // Fixed width numbers to prevent jitter
     },
     phaseLabel: {
         fontSize: 13,

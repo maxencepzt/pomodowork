@@ -16,7 +16,7 @@ export default function HomeScreen() {
     const {
         phase,
         isRunning,
-        progress,
+        remainingMs,
         timeDisplay,
         completedCycles,
         totalCycles,
@@ -64,7 +64,9 @@ export default function HomeScreen() {
                 {/* Timer */}
                 <View style={styles.timerContainer}>
                     <CircularTimer
-                        progress={progress}
+                        isRunning={isRunning}
+                        remainingMs={remainingMs}
+                        durationMs={activeProfile ? (phase === 'break' ? activeProfile.breakDurationMs : activeProfile.workDurationMs) : 0}
                         timeDisplay={displayTime}
                         phase={phase}
                     />
