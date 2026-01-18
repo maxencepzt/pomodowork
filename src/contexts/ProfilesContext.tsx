@@ -19,7 +19,8 @@ type ProfilesAction =
     | { type: 'ADD'; profile: Profile }
     | { type: 'UPDATE'; profile: Profile }
     | { type: 'DELETE'; id: string }
-    | { type: 'SET_ACTIVE'; id: string };
+    | { type: 'SET_ACTIVE'; id: string }
+    | { type: 'INCREMENT_SESSIONS'; id: string };
 
 const initialState: ProfilesState = {
     profiles: [],
@@ -60,6 +61,15 @@ function profilesReducer(state: ProfilesState, action: ProfilesAction): Profiles
                 ...state,
                 activeProfileId: action.id,
             };
+        case 'INCREMENT_SESSIONS':
+            return {
+                ...state,
+                profiles: state.profiles.map(p =>
+                    p.id === action.id
+                        ? { ...p, completedSessions: (p.completedSessions || 0) + 1, updatedAt: Date.now() }
+                        : p
+                ),
+            };
         default:
             return state;
     }
@@ -71,6 +81,7 @@ interface ProfilesContextValue extends ProfilesState {
     updateProfile: (profile: Profile) => Promise<void>;
     deleteProfile: (id: string) => Promise<void>;
     setActiveProfile: (id: string) => Promise<void>;
+    incrementSessionCount: (id: string) => Promise<void>;
 }
 
 const ProfilesContext = createContext<ProfilesContextValue | null>(null);
@@ -129,6 +140,30 @@ export function ProfilesProvider({ children }: { children: ReactNode }) {
         await storage.setActiveProfileId(id);
     }, []);
 
+    // Better implementation for increment:
+    const incrementSessionCountReal = useCallback(async (id: string) => {
+        dispatch({ type: 'INCREMENT_SESSIONS', id });
+
+        // Use functional state update logic or ref?
+        // Let's rely on the fact that dispatch is sync-like in React 18 batching, 
+        // but for async storage we need the value.
+        // Safest: Calculate new list here.
+        const profileToUpdate = state.profiles.find(p => p.id === id);
+        if (!profileToUpdate) return;
+
+        const updatedProfile = {
+            ...profileToUpdate,
+            completedSessions: (profileToUpdate.completedSessions || 0) + 1,
+            updatedAt: Date.now()
+        };
+
+        const newProfiles = state.profiles.map(p =>
+            p.id === id ? updatedProfile : p
+        );
+
+        await storage.setProfiles(newProfiles);
+    }, [state.profiles]);
+
     const activeProfile = state.profiles.find(p => p.id === state.activeProfileId) ?? null;
 
     const value: ProfilesContextValue = {
@@ -138,6 +173,7 @@ export function ProfilesProvider({ children }: { children: ReactNode }) {
         updateProfile,
         deleteProfile,
         setActiveProfile,
+        incrementSessionCount: incrementSessionCountReal,
     };
 
     return (

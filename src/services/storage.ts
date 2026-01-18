@@ -9,13 +9,18 @@ import type { Profile } from '@/types/profile';
 import type { Settings } from '@/types/settings';
 
 const STORAGE_KEYS = {
-    PROFILES: '@pomodowork/profiles',
-    ACTIVE_PROFILE_ID: '@pomodowork/activeProfileId',
-    SETTINGS: '@pomodowork/settings',
+    PROFILES: 'pomodowork_profiles_v1',
+    ACTIVE_PROFILE_ID: 'pomodowork_active_profile_v1',
+    SETTINGS: 'pomodowork_settings_v1',
+    STATS: 'pomodowork_stats_v1',
     TIMER_STATE: '@pomodowork/timerState',
 } as const;
 
 type StorageKey = keyof typeof STORAGE_KEYS;
+
+export interface StoredStats {
+    totalWorkMs: number;
+}
 
 /**
  * Generic get with JSON parsing
@@ -96,6 +101,14 @@ export const storage = {
     },
 
     // Clear all data
+    async getStats(): Promise<StoredStats | null> {
+        return get<StoredStats>('STATS');
+    },
+
+    async setStats(stats: StoredStats): Promise<void> {
+        await set('STATS', stats);
+    },
+
     async clear(): Promise<void> {
         await AsyncStorage.multiRemove(Object.values(STORAGE_KEYS));
     },

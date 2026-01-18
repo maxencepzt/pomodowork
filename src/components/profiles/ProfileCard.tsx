@@ -34,7 +34,6 @@ interface ProfileCardProps {
 }
 
 export function ProfileCard({ profile, isActive, onSelect, onDelete, canDelete }: ProfileCardProps) {
-    const cycles = calculateTotalCycles(profile);
     const summary = formatProfileSummary(profile);
 
     const translateX = useSharedValue(0);
@@ -118,8 +117,10 @@ export function ProfileCard({ profile, isActive, onSelect, onDelete, canDelete }
                 </View>
 
                 <View style={styles.cyclesBadge}>
-                    <Text style={[styles.cyclesText, isActive && styles.cyclesTextActive]}>{cycles}</Text>
-                    <Text style={styles.cyclesLabel}>cycles</Text>
+                    <Text style={[styles.cyclesText, isActive && styles.cyclesTextActive]}>
+                        {profile.completedSessions || 0}
+                    </Text>
+                    <Text style={styles.cyclesLabel}>sessions</Text>
                 </View>
             </TouchableOpacity>
         );
@@ -148,8 +149,10 @@ export function ProfileCard({ profile, isActive, onSelect, onDelete, canDelete }
                         </View>
 
                         <View style={styles.cyclesBadge}>
-                            <Text style={[styles.cyclesText, isActive && styles.cyclesTextActive]}>{cycles}</Text>
-                            <Text style={styles.cyclesLabel}>cycles</Text>
+                            <Text style={[styles.cyclesText, isActive && styles.cyclesTextActive]}>
+                                {profile.completedSessions || 0}
+                            </Text>
+                            <Text style={styles.cyclesLabel}>sessions</Text>
                         </View>
                     </TouchableOpacity>
                 </Animated.View>

@@ -10,6 +10,7 @@ export interface Profile {
     workDurationMs: number;
     breakDurationMs: number;
     sessionDurationMs: number;
+    completedSessions: number;
     createdAt: number;
     updatedAt: number;
 }
@@ -40,6 +41,7 @@ export function formDataToProfile(formData: ProfileFormData, existingId?: string
         workDurationMs: formData.workDurationMinutes * 60 * 1000,
         breakDurationMs: formData.breakDurationMinutes * 60 * 1000,
         sessionDurationMs: formData.sessionDurationHours * 60 * 60 * 1000,
+        completedSessions: 0,
         createdAt: existingId ? now : now,
         updatedAt: now,
     };
@@ -55,6 +57,7 @@ export const DEFAULT_PROFILES: Profile[] = [
         workDurationMs: 25 * 60 * 1000,
         breakDurationMs: 5 * 60 * 1000,
         sessionDurationMs: 4 * 60 * 60 * 1000,
+        completedSessions: 0,
         createdAt: 0,
         updatedAt: 0,
     },
@@ -64,6 +67,7 @@ export const DEFAULT_PROFILES: Profile[] = [
         workDurationMs: 50 * 60 * 1000,
         breakDurationMs: 10 * 60 * 1000,
         sessionDurationMs: 5 * 60 * 60 * 1000,
+        completedSessions: 0,
         createdAt: 0,
         updatedAt: 0,
     },

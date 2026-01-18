@@ -99,6 +99,21 @@ export default function TabLayout() {
                     ),
                 }}
             />
+            <Tabs.Screen
+                name="stats"
+                options={{
+                    title: 'Stats',
+                    headerTitle: 'Statistics',
+                    headerShown: true,
+                    tabBarIcon: ({ focused, color }) => (
+                        <Ionicons
+                            name={focused ? 'stats-chart' : 'stats-chart-outline'}
+                            size={26}
+                            color={color}
+                        />
+                    ),
+                }}
+            />
         </Tabs>
     );
 }

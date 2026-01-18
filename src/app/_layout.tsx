@@ -6,33 +6,29 @@
 
 import React from 'react';
 import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { ProfilesProvider, SettingsProvider, TimerProvider } from '@/contexts';
-import { colors } from '@/constants/theme';
+import { ProfilesProvider } from '@/contexts/ProfilesContext';
+import { SettingsProvider } from '@/contexts/SettingsContext';
+import { StatsProvider } from '@/contexts/StatsContext';
+import { TimerProvider } from '@/contexts';
 
 export default function RootLayout() {
     return (
         <SettingsProvider>
             <ProfilesProvider>
-                <TimerProvider>
-                    <StatusBar style="light" />
-                    <Stack
-                        screenOptions={{
-                            headerShown: false,
-                            contentStyle: { backgroundColor: colors.background },
-                            animation: 'fade',
-                        }}
-                    >
-                        <Stack.Screen name="(tabs)" />
-                        <Stack.Screen
-                            name="create-profile"
-                            options={{
-                                presentation: 'modal',
-                                animation: 'slide_from_bottom',
-                            }}
-                        />
-                    </Stack>
-                </TimerProvider>
+                <StatsProvider>
+                    <TimerProvider>
+                        <Stack>
+                            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                            <Stack.Screen
+                                name="create-profile"
+                                options={{
+                                    presentation: 'modal',
+                                    animation: 'slide_from_bottom',
+                                }}
+                            />
+                        </Stack>
+                    </TimerProvider>
+                </StatsProvider>
             </ProfilesProvider>
         </SettingsProvider>
     );

@@ -22,6 +22,8 @@ import { notifications } from '@/services/notifications';
 import { haptics } from '@/services/haptics';
 import { soundService } from '@/services/sound';
 import { useSettings } from './SettingsContext';
+import { useProfiles } from './ProfilesContext';
+import { useStats } from './StatsContext';
 
 function timerReducer(state: TimerState, action: TimerAction): TimerState {
     switch (action.type) {
@@ -89,6 +91,8 @@ const TimerContext = createContext<TimerContextValue | null>(null);
 export function TimerProvider({ children }: { children: ReactNode }) {
     const [state, dispatch] = useReducer(timerReducer, INITIAL_TIMER_STATE);
     const { settings } = useSettings();
+    const { incrementSessionCount } = useProfiles();
+    const { addWorkTime } = useStats();
 
     // Store profile for phase transitions
     const profileRef = useRef<Profile | null>(null);
@@ -127,6 +131,14 @@ export function TimerProvider({ children }: { children: ReactNode }) {
         const phaseEndTime = state.endTime || Date.now();
 
         if (state.phase === 'work') {
+            // Work phase complete (session finished or moving to break)
+
+            // Record stats
+            if (profile) {
+                await incrementSessionCount(profile.id);
+                await addWorkTime(profile.workDurationMs);
+            }
+
             // Work phase complete
             if (state.completedCycles + 1 >= state.totalCycles) {
                 // Session complete!
