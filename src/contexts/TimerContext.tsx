@@ -20,6 +20,7 @@ import { TimerState, TimerAction, INITIAL_TIMER_STATE } from '@/types/timer';
 import { Profile, calculateCycleCount } from '@/types/profile';
 import { notifications } from '@/services/notifications';
 import { haptics } from '@/services/haptics';
+import { soundService } from '@/services/sound';
 import { useSettings } from './SettingsContext';
 
 function timerReducer(state: TimerState, action: TimerAction): TimerState {
@@ -163,6 +164,9 @@ export function TimerProvider({ children }: { children: ReactNode }) {
 
             if (notifSettings.notifyBreakStart) {
                 await haptics.triggerHaptic(notifSettings.mode);
+                if (notifSettings.mode === 'sound') {
+                    await soundService.playSound();
+                }
             }
 
             // Schedule notification for break end (if it's in future)
@@ -190,6 +194,9 @@ export function TimerProvider({ children }: { children: ReactNode }) {
 
             if (notifSettings.notifyWorkResume) {
                 await haptics.triggerHaptic(notifSettings.mode);
+                if (notifSettings.mode === 'sound') {
+                    await soundService.playSound();
+                }
             }
 
             // Schedule notification for work end

@@ -17,7 +17,7 @@ import Animated, {
 import { useSettings } from '@/contexts';
 import { colors, spacing, radius, borders } from '@/constants/theme';
 import { haptics } from '@/services/haptics';
-import { notifications } from '@/services/notifications';
+import { soundService } from '@/services/sound';
 import type { NotificationMode } from '@/types/settings';
 
 const NOTIFICATION_MODES: { value: NotificationMode; label: string; icon: string; color: string }[] = [
@@ -69,11 +69,10 @@ export default function SettingsScreen() {
     const handleModeChange = async (mode: NotificationMode) => {
         await updateNotificationMode(mode);
 
-        // Always trigger notification preview
-        await notifications.testNotification(mode);
-
-        // For vibration mode, also trigger haptic feedback immediately
-        if (mode === 'vibration') {
+        // Preview based on mode (No visual banner for preview, as requested)
+        if (mode === 'sound') {
+            await soundService.playSound();
+        } else if (mode === 'vibration') {
             await haptics.triggerHaptic(mode);
         }
     };
