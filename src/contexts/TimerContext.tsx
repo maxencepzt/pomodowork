@@ -152,6 +152,17 @@ export function TimerProvider({ children }: { children: ReactNode }) {
             }
 
             // Start Break
+
+            // Allow alarm to play cleanly by stopping background silence first
+            // Note: playSound() in soundService already calls stopSilence(), but good to be explicit or leave to service.
+            // Service handles it. So we rely on soundService.playSound() OR if mode is NOT sound, we must manually stop.
+
+            // Wait, if mode is NOT sound (e.g. silent), we MUST stop the silence loop!
+            // Otherwise it keeps looping 0 volume track, draining battery?
+            // Yes.
+
+            await soundService.stopSilence();
+
             dispatch({ type: 'PHASE_COMPLETE', nextPhase: 'break', endTime: breakEndTime });
 
             if (notifSettings.notifyBreakStart) {
@@ -276,12 +287,14 @@ export function TimerProvider({ children }: { children: ReactNode }) {
         }
 
         await haptics.lightImpact();
+        await soundService.playSilence();
     }, [settings]);
 
     const pause = useCallback(async () => {
         dispatch({ type: 'PAUSE' });
         await notifications.cancelAllNotifications();
         await haptics.lightImpact();
+        await soundService.stopSilence();
     }, []);
 
     const resume = useCallback(async () => {
@@ -298,6 +311,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
         }
 
         await haptics.lightImpact();
+        await soundService.playSilence();
     }, [state.remainingMs, state.phase, settings]);
 
     const reset = useCallback(async () => {
@@ -305,6 +319,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
         dispatch({ type: 'RESET' });
         await notifications.cancelAllNotifications();
         await haptics.mediumImpact();
+        await soundService.stopAll();
     }, []);
 
     const value: TimerContextValue = {
